@@ -32,6 +32,10 @@ config config status.showUntrackedFiles no
 git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
 ~/.bash_it/install.sh
 
-#bash-it enable alias git fuck tmux homebrew osx
-#bash-it enable plugin git osx
-
+#bash-it enable alias git fuck tmux
+#bash-it enable plugin git tmux ssh
+#bash-it enable completions git pip vagrant virtualbox ssh tmux
+## Mac
+#bash-it enable alias homebrew osx
+#bash-it enable plugin osx
+#bash-it enable completions brew
