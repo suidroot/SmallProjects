@@ -36,6 +36,12 @@ git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
 #bash-it enable plugin git tmux ssh
 #bash-it enable completions git pip vagrant virtualbox ssh tmux
 ## Mac
+if [ "$(uname)" == "Darwin" ]; then
+    # Specify the preferences directory
+    defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "~/.iterm2"
+    # Tell iTerm2 to use the custom preferences in the directory
+    defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
+fi
 #bash-it enable alias homebrew osx
 #bash-it enable plugin osx
 #bash-it enable completions brew
