@@ -1,12 +1,12 @@
 #!/usr/bin/which python
 
 """
-Script to Calculate moy Personal Velocty
-Utitilizes sara from icalBuddy
+Script to Calculate my Personal Velocity
+Utilities data from icalBuddy
 
 """
 
-# from __future__ import print_function
+from __future__ import print_function
 from __future__ import division
 from subprocess import check_output
 import datetime
@@ -19,7 +19,9 @@ __email__ = "locutus@the-collective.net"
 __status__ = "Production"
 
 DATEFORMAT = '%m/%d/%Y'
-TOTALHOURS = 45
+DAYLENGTH = 9
+DAYSINWEEK = 5
+TOTALHOURS = DAYLENGTH * DAYSINWEEK
 #Daily Adjust in Mins
 DAILYADJUST = 0
 ADMINMEETINGS = ["Daily Review", "Lunch", "Weekly Review"]
@@ -32,7 +34,6 @@ ICALBUDDYLOC = "/usr/local/bin/icalbuddy"
 def datesofweek():
     """ Calculate start and end of week """
 
-    DAYSINWEEK = 5
 
     day = datetime.date.today()
     datetoday = datetime.datetime.strptime(day.strftime(DATEFORMAT), DATEFORMAT)
@@ -98,6 +99,10 @@ def processicaldata(rawlist):
                 if date == 'today':
                     currdate = datetime.datetime.strptime(today.strftime(DATEFORMAT),
                                                           DATEFORMAT)
+                elif date == 'yesterday':
+                    yesterday = datetime.date.today() + datetime.timedelta(days=-1)
+                    currdate = datetime.datetime.strptime(yesterday.strftime(DATEFORMAT),
+                                                          DATEFORMAT)
                 elif date == 'tomorrow':
                     tomorrow = datetime.date.today() + datetime.timedelta(days=1)
                     currdate = datetime.datetime.strptime(tomorrow.strftime(DATEFORMAT),
@@ -112,9 +117,11 @@ def processicaldata(rawlist):
                     currdate = datetime.datetime.strptime(date, DATEFORMAT)
 
                 if event in ADMINMEETINGS:
-                    admindaily[DAYSOFWEEK[currdate.weekday()]] += timelength(timerange)
+                    admindaily[DAYSOFWEEK[currdate.weekday()]] \
+                    += timelength(timerange)
                 else:
-                    workdaily[DAYSOFWEEK[currdate.weekday()]] += timelength(timerange)
+                    workdaily[DAYSOFWEEK[currdate.weekday()]] \
+                    += timelength(timerange)
 
     return workdaily, admindaily
 
@@ -125,7 +132,7 @@ def printvelocitystats(workdaily, admindaily):
     admintotal = 0
     worktotal = 0
 
-    dailyheader = ["Day of Week", "Work", "Admin", "Total"]
+    dailyheader = ["Day of Week", "Work", "Admin", "Free", "Total"]
     dailyrows = []
 
     for item in DAYSOFWEEK:
@@ -135,17 +142,18 @@ def printvelocitystats(workdaily, admindaily):
         admintotal += admin
         worktotal += work
         dailytotal = admin + work
-
+        free = DAYLENGTH - dailytotal
         totalvelocity += dailytotal
-        dailyrows.append([item, work, admin, dailytotal])
 
-    print tabulate(dailyrows, dailyheader, tablefmt="fancy_grid")
+        dailyrows.append([item, work, admin, free, dailytotal])
 
-    print tabulate([["Work Total", worktotal],
-                    ["Admin Total", admintotal],
-                    ["Total Hours", totalvelocity],
-                    ["Percent Usage", ((totalvelocity)/TOTALHOURS)*100],
-                    ["Time Available", TOTALHOURS-(totalvelocity)]])
+    print (tabulate(dailyrows, dailyheader, tablefmt="fancy_grid"))
+    print (tabulate([["Work Total", worktotal],
+                     ["Admin Total", admintotal],
+                     ["Total Hours", totalvelocity],
+                     ["Percent Usage", \
+                     str(int(((totalvelocity)/TOTALHOURS)*100)) + " %"],
+                     ["Time Available", TOTALHOURS-(totalvelocity)]]))
 
 def main():
     """ Main Processing """
