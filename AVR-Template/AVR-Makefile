@@ -2,11 +2,11 @@
 # is public domain), believed to be neutral to any flavor of "make"
 # (GNU make, BSD make, SysV make)
 
-AVRV = avr4
-MCU = m328p
+MCU = atmega328p
+F_CPU = 8000000UL
 FORMAT = ihex
-TARGET = blinkled
-SRC = $(TARGET).c
+TARGET = max7219
+SRC = $(wildcard *.c)
 ASRC = 
 OPT = s
 #OPT = 3
@@ -123,8 +123,8 @@ LST = $(ASRC:.S=.lst) $(SRC:.c=.lst)
 
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
-ALL_CFLAGS = -mmcu=$(AVRV) -I. $(CFLAGS)
-ALL_ASFLAGS = -mmcu=$(AVRV) -I. -x assembler-with-cpp $(ASFLAGS)
+ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS)
+ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
 # Default target.
