@@ -4,8 +4,9 @@
 
 MCU = atmega328p
 F_CPU = 8000000UL
+BAUD = 9600UL
 FORMAT = ihex
-TARGET = max7219
+TARGET = analogsensor
 SRC = $(wildcard *.c)
 ASRC = 
 OPT = s
@@ -27,21 +28,21 @@ DEBUG = stabs
 CSTANDARD = -std=gnu99
 
 # Place -D or -U options here
-CDEFS = -D__AVR_ATmega328P__
+CDEFS = -D__AVR_ATmega328P__ -DF_CPU=$(F_CPU)
+
+ifdef BAUD
+CDEFS +=  -DBAUD=$(BAUD)
+endif
 
 # Place -I options here
 CINCS =
-
 
 CDEBUG = -g$(DEBUG)
 CWARN = -Wall -Wstrict-prototypes
 CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
 CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CSTANDARD) $(CEXTRA)
-
-
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs 
-
 
 #Additional libraries.
 
@@ -72,21 +73,17 @@ MATH_LIB = -lm
 # 64 KB of external RAM, starting after internal RAM (ATmega128!),
 # only used for heap (malloc()).
 #EXTMEMOPTS = -Wl,--defsym=__heap_start=0x801100,--defsym=__heap_end=0x80ffff
-
 EXTMEMOPTS =
 
 #LDMAP = $(LDFLAGS) -Wl,-Map=$(TARGET).map,--cref
 LDFLAGS = $(EXTMEMOPTS) $(LDMAP) $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 
-
 # Programming support using avrdude. Settings and variables.
-
 AVRDUDE_PROGRAMMER = usbtiny
 # AVRDUDE_PORT = -P /dev/ttyUSB0
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
@@ -101,10 +98,8 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # reports about avrdude. See  
 # to submit bug reports.
 AVRDUDE_VERBOSE = -v -v
-
 AVRDUDE_BASIC = -p $(MCU) $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS = $(AVRDUDE_BASIC) $(AVRDUDE_NO_VERIFY) $(AVRDUDE_VERBOSE) $(AVRDUDE_ERASE_COUNTER)
-
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -199,8 +194,6 @@ $(TARGET).elf: $(OBJ)
 # Assemble: create object files from assembler source files.
 .S.o:
 	$(CC) -c $(ALL_ASFLAGS) $< -o $@
-
-
 
 # Target: clean project.
 clean:
