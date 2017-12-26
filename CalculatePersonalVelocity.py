@@ -95,6 +95,7 @@ def processicaldata(rawlist):
             event, thedatetime = line.split('=')
             if event not in IGNOREEVENTS:
                 # 08/11/2017 at 10:00 - 10:30
+                # print (event, thedatetime)
                 date, timerange = thedatetime.split(' at ')
                 if date == 'today':
                     currdate = datetime.datetime.strptime(today.strftime(DATEFORMAT),
@@ -132,20 +133,24 @@ def printvelocitystats(workdaily, admindaily):
     admintotal = 0
     worktotal = 0
 
-    dailyheader = ["Day of Week", "Work", "Admin", "Free", "Total"]
+    dailyheader = ["Day of Week", "Work", "Admin", "Total", "Free"]
     dailyrows = []
 
     for item in DAYSOFWEEK:
         # need daily adjust to account for re-occuring tentatives
         work = (workdaily[item] - DAILYADJUST)/60
-        admin = admindaily[item]/60
+        if work != 0:
+            admin = admindaily[item]/60
+        else:
+            admin = 0
+
         admintotal += admin
         worktotal += work
         dailytotal = admin + work
         free = DAYLENGTH - dailytotal
         totalvelocity += dailytotal
 
-        dailyrows.append([item, work, admin, free, dailytotal])
+        dailyrows.append([item, work, admin, dailytotal, free])
 
     print (tabulate(dailyrows, dailyheader, tablefmt="fancy_grid"))
     print (tabulate([["Work Total", worktotal],
