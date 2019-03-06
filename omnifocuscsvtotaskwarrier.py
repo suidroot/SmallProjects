@@ -2,10 +2,15 @@
 
 import csv
 import subprocess
+from taskw import TaskWarrior
 
-OFCSV = "/Users/locutus/Desktop/OmniFocus.csv"
+DRYRUN = "" 
+#DRYRUN = True
 
+OFCSV = "/Users/benmason/Desktop/OmniFocus.csv"
 
+w = TaskWarrior()
+# Task ID,Type,Name,Status,Project,Context,Start Date,Due Date,Completion Date,Duration,Flagged,Notes
 with open(OFCSV, 'rU') as filehandle:
     reader = csv.reader(filehandle, dialect='excel', quotechar='"')
     for line in reader:
@@ -17,6 +22,8 @@ with open(OFCSV, 'rU') as filehandle:
             duedate = line[7]
             duration = line[9]
             note = line[11]
+            tags = line[12].split(", ")
+
 
 # Built-in attributes are:
 #   description:    Task description text
@@ -35,14 +42,31 @@ with open(OFCSV, 'rU') as filehandle:
 #   modified:       Date task was last modified
 #   depends:        Other tasks that this task depends upon
 
-            command = ["task", "add", '"' + task + '"', "project:"+project, context]
+            #command = "task add project:\"" + project + "\" tags:\"" + ',"'.join(tags) + "\" " + task
+            
+            
+            command = ["task","add", "project:\"" + project + "\"", "tags:\"" + '","'.join(tags)+"\"",task]
+            if DRYRUN == True:
+                print command
+            else:
+                print command
+                output = subprocess.check_output(command)
+                print output
 
-            if duedate != '':
-                command.append("due:"+duedate)
-            if startdate != '':
-                command.append("scheduled:"+startdate)
+                #currtask = w.task_add(task, project=project, tags=tags)
 
-            subprocess.call(command)
+                #if duedate != '':
+                #    id, task = w.get_task(id=currtask['id'])
+                #    task['due'] = duedate
+                #    date.append("due="+duedate)
+                #if startdate != '':
+                #    id, task = w.get_task(id=currtask['id'])
+                #    task['due'] = duedate
+                #    date.append("scheduled:"+startdate)
+
+                #if duration != '':
+                #    id, task = w.get_task(id=currtask['id'])
+                #    task['due'] = duedate
 
 # Task ID,Type,Name,Status,Project,Context,Start Date,Due Date,Completion Date,Duration,Flagged,Notes
 # 1,Project,Miscellaneous,active,,,,,,,0,
