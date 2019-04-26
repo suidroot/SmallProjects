@@ -1,15 +1,21 @@
 #!/bin/sh
 
+if [ -x /var/lib/dpkg/lock-frontend ]; then
+    echo "dpkg running come back in a few mins"
+    exit 255
+fi
 
-if [ ! -x ~/.updated ]; 
+if [ ! -e ~/.updated ]; then 
     sudo apt update
-    sudo apt upgrade
-    sudo apt install clinfo unzip p7zip-full
-    sudo apt install build-essential linux-headers-$(uname -r) # Optional
+    sudo apt -y upgrade
+    sudo apt -y install clinfo unzip p7zip-full
+    sudo apt -y install build-essential linux-headers-$(uname -r) # Optional
     sudo apt-get install -yq python3-pip
-    sudo pip3 install psutil
+    sudo -H pip3 install psutil
     touch ~/.updated
-    sudo reboot
+
+    echo "Please reboot Server"
+    exit 1
 fi 
 
 rm ~/.updated
@@ -26,5 +32,6 @@ cd ~/wordlists
 bunzip2 ./rockyou.txt.bz2
 
 echo "Cleaning up Home Dir"
+cd ~
 mkdir ARCHIVE
-mv hashcat-5.1.0.7z Nvidia_Cloud_EULA.pdf README ARCHIVE/
+mv awscracker-build.sh hashcat-5.1.0.7z Nvidia_Cloud_EULA.pdf README ARCHIVE/

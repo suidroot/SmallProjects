@@ -30,10 +30,10 @@ start_instance() {
 
 connect_instance() {
   
-    STATUS=`aws ec2 describe-instances --instance-ids $INSTANCEID | jq -r .Reservations[0].Instances[0].State.Name`
+    STATUS=`aws ec2 describe-instances --instance-ids $INSTANCE_ID | jq -r .Reservations[0].Instances[0].State.Name`
 
     if [ "$STATUS" != "running" ]; then
-        echo
+        echo "$STATUS"
         echo "System is not Running"
         exit 255
     fi
