@@ -44,7 +44,8 @@ if [ $? = 0 ]; then
   else
     echo "Backing up pre-existing dot files.";
     mkdir -p .config-backup
-    config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .config-backup/{}
+    config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} cp -a {} .config-backup/{}
+    config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} rm {}
 fi;
 config checkout
 config config status.showUntrackedFiles no
