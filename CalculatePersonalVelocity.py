@@ -4,6 +4,16 @@
 Script to Calculate my Personal Velocity
 Utilities data from icalBuddy
 
+Usage:
+- Current week
+python ~/code/Misc/CalculatePersonalVelocity.py
+
+- Last week
+python ~/code/Misc/CalculatePersonalVelocity.py 1
+
+- Week before last
+python ~/code/Misc/CalculatePersonalVelocity.py 2
+
 """
 
 from __future__ import print_function
@@ -11,6 +21,7 @@ from __future__ import division
 from subprocess import check_output
 import datetime
 from tabulate import tabulate
+import sys
 
 __author__ = "Ben Mason"
 __copyright__ = "Copyright 2017"
@@ -31,13 +42,14 @@ DAYSOFWEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 ICALBUDDYLOC = "/usr/local/bin/icalbuddy"
 
 
-def datesofweek():
+def datesofweek(weekdelta=0):
     """ Calculate start and end of week """
 
+    weekdelta = weekdelta * 7
 
     day = datetime.date.today()
     datetoday = datetime.datetime.strptime(day.strftime(DATEFORMAT), DATEFORMAT)
-    start = datetoday - datetime.timedelta(days=datetoday.weekday())
+    start = datetoday - datetime.timedelta(days=datetoday.weekday() + weekdelta)
     end = start + datetime.timedelta(days=DAYSINWEEK-1)
     return day, start, end
 
@@ -51,9 +63,9 @@ def timelength(timerange):
 
     return lengthmins
 
-def geticaldata():
+def geticaldata(weekdelta=0):
     """ Run icalBuddy and return list of data """
-    _, monday, friday = datesofweek()
+    _, monday, friday = datesofweek(weekdelta)
 
     daterange = "eventsFrom:" + monday.strftime(DATEFORMAT) + \
         " to:" + friday.strftime(DATEFORMAT)
@@ -72,6 +84,7 @@ def geticaldata():
                         "| uniq"] # using uniq to overcome and macOS bug
 
     icalbuddyout = check_output(' '.join(icalbuddycommand), shell=True)
+    icalbuddyout = icalbuddyout.decode('UTF-8')
     rawlist = icalbuddyout.split('\n')
 
     return rawlist
@@ -112,6 +125,11 @@ def processicaldata(rawlist):
                     tomorrow = datetime.date.today() + datetime.timedelta(days=2)
                     currdate = datetime.datetime.strptime(tomorrow.strftime(DATEFORMAT),
                                                           DATEFORMAT)
+                elif date == 'day before yesterday':
+                    tomorrow = datetime.date.today() + datetime.timedelta(days=-2)
+                    currdate = datetime.datetime.strptime(tomorrow.strftime(DATEFORMAT),
+                                                          DATEFORMAT)
+
                 else:
                     # 08/11/2017 at 10:00 - 10:30
                     # currdate = datetime.datetime.strptime(date, '%b %d, %Y')
@@ -162,7 +180,13 @@ def printvelocitystats(workdaily, admindaily):
 
 def main():
     """ Main Processing """
-    icaldata = geticaldata()
+
+    if len(sys.argv) > 1:
+        weekdelta = int(sys.argv[1])
+    else:
+        weekdelta=0
+
+    icaldata = geticaldata(weekdelta)
     workdata, admindata = processicaldata(icaldata)
     printvelocitystats(workdata, admindata)
 
