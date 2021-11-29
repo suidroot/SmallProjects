@@ -35,6 +35,7 @@ DAYSINWEEK = 5
 TOTALHOURS = DAYLENGTH * DAYSINWEEK
 #Daily Adjust in Mins
 DAILYADJUST = 0
+DECIMAL_PRECISION=2
 ADMINMEETINGS = ["Daily Review", "Lunch", "Weekly Review"]
 IGNOREEVENTS = ["FW: Managed Services Daily Operations Call",
                 "Network Huddle (with recording option)"]
@@ -74,7 +75,7 @@ def geticaldata(weekdelta=0):
                         "-npn",
                         "-ea",
                         "-nc",
-                        "-ps ' = '",
+                        "-ps ' ~ '",
                         "-df %m/%d/%Y",
                         "-tf %H:%M",
                         "-eep 'url,location,notes,attendees'",
@@ -105,7 +106,8 @@ def processicaldata(rawlist):
     for line in rawlist:
         # print line
         if line != "":
-            event, thedatetime = line.split('=')
+            #print(line)
+            event, thedatetime = line.split('~')
             if event not in IGNOREEVENTS:
                 # 08/11/2017 at 10:00 - 10:30
                 # print (event, thedatetime)
@@ -129,7 +131,6 @@ def processicaldata(rawlist):
                     tomorrow = datetime.date.today() + datetime.timedelta(days=-2)
                     currdate = datetime.datetime.strptime(tomorrow.strftime(DATEFORMAT),
                                                           DATEFORMAT)
-
                 else:
                     # 08/11/2017 at 10:00 - 10:30
                     # currdate = datetime.datetime.strptime(date, '%b %d, %Y')
@@ -168,15 +169,17 @@ def printvelocitystats(workdaily, admindaily):
         free = DAYLENGTH - dailytotal
         totalvelocity += dailytotal
 
-        dailyrows.append([item, work, admin, dailytotal, free])
+        dailyrows.append([item, round(work, DECIMAL_PRECISION), admin, \
+            round(dailytotal, DECIMAL_PRECISION), \
+            round(free, DECIMAL_PRECISION)])
 
     print (tabulate(dailyrows, dailyheader, tablefmt="fancy_grid"))
-    print (tabulate([["Work Total", worktotal],
+    print (tabulate([["Work Total", round(worktotal, DECIMAL_PRECISION)],
                      ["Admin Total", admintotal],
-                     ["Total Hours", totalvelocity],
+                     ["Total Hours", round(totalvelocity, DECIMAL_PRECISION)],
                      ["Percent Usage", \
-                     str(int(((totalvelocity)/TOTALHOURS)*100)) + " %"],
-                     ["Time Available", TOTALHOURS-(totalvelocity)]]))
+                     str(round((totalvelocity/TOTALHOURS)*100,DECIMAL_PRECISION)) + " %"],
+                     ["Free Time Available", round(TOTALHOURS-(totalvelocity), DECIMAL_PRECISION)]]))
 
 def main():
     """ Main Processing """
