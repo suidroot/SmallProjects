@@ -20,8 +20,8 @@ from __future__ import print_function
 from __future__ import division
 from subprocess import check_output
 import datetime
-from tabulate import tabulate
 import sys
+from tabulate import tabulate
 
 __author__ = "Ben Mason"
 __copyright__ = "Copyright 2017"
@@ -37,6 +37,7 @@ TOTALHOURS = DAYLENGTH * DAYSINWEEK
 DAILYADJUST = 0
 DECIMAL_PRECISION=2
 ADMINMEETINGS = ["Daily Review", "Lunch", "Weekly Review"]
+FOCUSTIME = ["Focus"]
 IGNOREEVENTS = ["FW: Managed Services Daily Operations Call",
                 "Network Huddle (with recording option)"]
 DAYSOFWEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
@@ -103,6 +104,10 @@ def processicaldata(rawlist):
     for item in DAYSOFWEEK:
         admindaily[item] = 0
 
+    focusdaily = {}
+    for item in DAYSOFWEEK:
+        focusdaily[item] = 0
+
     for line in rawlist:
         # print line
         if line != "":
@@ -139,20 +144,24 @@ def processicaldata(rawlist):
                 if event in ADMINMEETINGS:
                     admindaily[DAYSOFWEEK[currdate.weekday()]] \
                     += timelength(timerange)
+                elif event in FOCUSTIME:
+                    focusdaily[DAYSOFWEEK[currdate.weekday()]] \
+                    += timelength(timerange)
                 else:
                     workdaily[DAYSOFWEEK[currdate.weekday()]] \
                     += timelength(timerange)
 
-    return workdaily, admindaily
+    return workdaily, admindaily, focusdaily
 
 
-def printvelocitystats(workdaily, admindaily):
+def printvelocitystats(workdaily, admindaily, focusdaily):
     """ Display ther Velicty Stats """
     totalvelocity = 0
     admintotal = 0
     worktotal = 0
+    focustotal = 0
 
-    dailyheader = ["Day of Week", "Work", "Admin", "Total", "Free"]
+    dailyheader = ["Day of Week", "Work", "Admin", "Focus", "Total", "Free"]
     dailyrows = []
 
     for item in DAYSOFWEEK:
@@ -160,38 +169,44 @@ def printvelocitystats(workdaily, admindaily):
         work = (workdaily[item] - DAILYADJUST)/60
         if work != 0:
             admin = admindaily[item]/60
+            focus = (focusdaily[item] - DAILYADJUST)/60
         else:
             admin = 0
 
         admintotal += admin
         worktotal += work
-        dailytotal = admin + work
+        focustotal += focus
+        dailytotal = admin + work + focus
         free = DAYLENGTH - dailytotal
         totalvelocity += dailytotal
 
         dailyrows.append([item, round(work, DECIMAL_PRECISION), admin, \
+            round(focus, DECIMAL_PRECISION), \
             round(dailytotal, DECIMAL_PRECISION), \
             round(free, DECIMAL_PRECISION)])
 
     print (tabulate(dailyrows, dailyheader, tablefmt="fancy_grid"))
     print (tabulate([["Work Total", round(worktotal, DECIMAL_PRECISION)],
                      ["Admin Total", admintotal],
+                     ["Focus Total", focustotal],
                      ["Total Hours", round(totalvelocity, DECIMAL_PRECISION)],
                      ["Percent Usage", \
                      str(round((totalvelocity/TOTALHOURS)*100,DECIMAL_PRECISION)) + " %"],
-                     ["Free Time Available", round(TOTALHOURS-(totalvelocity), DECIMAL_PRECISION)]]))
+                     ["Free Time Available", round(TOTALHOURS-(totalvelocity), \
+                         DECIMAL_PRECISION)]]))
 
 def main():
     """ Main Processing """
 
     if len(sys.argv) > 1:
+        # Positive number backwards
         weekdelta = int(sys.argv[1])
     else:
         weekdelta=0
 
     icaldata = geticaldata(weekdelta)
-    workdata, admindata = processicaldata(icaldata)
-    printvelocitystats(workdata, admindata)
+    workdata, admindata, focusdaily = processicaldata(icaldata)
+    printvelocitystats(workdata, admindata, focusdaily)
 
 if __name__ == "__main__":
     main()
