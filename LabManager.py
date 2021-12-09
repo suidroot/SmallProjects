@@ -1,15 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script is used to turn on and off VMs on a ESXi Host.
 """
-
-from pysphere import VIServer
-from texttable import Texttable
-from netmiko import ConnectHandler
 import sys
 import argparse
 import ssl
+from pysphere import VIServer
+from texttable import Texttable
+from netmiko import ConnectHandler
+
+__author__ = "Ben Mason"
+__copyright__ = "Copyright 2021"
+__version__ = "1.0.0"
+__email__ = "locutus@the-collective.net"
+__status__ = "Production"
 
 # esxhost = 'http://10.5.6.200:8080/sdk'
 esxhost = '10.5.6.200'
@@ -38,7 +43,7 @@ try:
 finally:
     ##DO NOT DO the following line or else you'll get "ssl.SSLError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed" error
     ##ssl._create_default_https_context = default_context
-    print "vserver: AFTER CONNECTION - [{}] [{}]".format(server.get_server_type(), server.get_api_version())
+    print ("vserver: AFTER CONNECTION - [{}] [{}]").format(server.get_server_type(), server.get_api_version())
 
 def initargs():
     """ initialize variables with command-line arguments """
@@ -55,22 +60,22 @@ def initargs():
 
 def poweronvm(vmpath):
     vm = server.get_vm_by_path(vmpath)
-    print "Powering On: " + vm.get_property('name'),
+    print (f"Powering On: {vm.get_property('name')}", end="")
     vm.power_on()
-    print "..Done"
+    print ("..Done")
 
 def poweroffvm(vmpath):
     vm = server.get_vm_by_path(vmpath)
-    print "Powering Off: " + vm.get_property('name'),
+    print (f"Powering Off: {vm.get_property('name')}", end="")
     vm.power_off()
-    print "..Done"
+    print ("..Done")
 
 def showdownhost():
 
     net_connect = ConnectHandler(**esxiserver)
 
     output = net_connect.send_command('poweroff')
-    print "\n".join(output)
+    print ("\n".join(output))
 
     sys.exit("ESX Host shutting Down")
 
@@ -78,7 +83,7 @@ def getvmlist():
     vmpathlist = server.get_registered_vms()
     counter = 0
 
-    print "Loading...",
+    print ("Loading...", end="")
     table = Texttable()
     table.set_deco(Texttable.HEADER)
     table.add_row(['VMID','Friendly Name','Hostname','IP Address','Power State'])
@@ -100,14 +105,14 @@ def getvmlist():
         vmindex[counter]['powerstate'] = vm.get_status()
         vmindex[counter]['networks'] = vm.get_property('net')
         
-        print str(counter) + " ",
+        print (f"{counter}  ", end="")
         table.add_row([vmindex[counter]['vmid'], \
             vmindex[counter]['vmfriendlyname'], \
             vmindex[counter]['hostname'], \
             vmindex[counter]['vmipaddress'], \
             vmindex[counter]['powerstate']])
 
-    print "...Done!"
+    print ("...Done!")
 
     print(table.draw())
 
@@ -132,10 +137,12 @@ while options.lower() != 'q':
         del vmliststr
         vmliststr = False
     else: 
-        print "\nEnter VMID to toggle power for seperated by Spaces or"
-        print "AON or All VMs on or AOFF for All VMS off"
-        print "Press Enter to Refresh"
-        print "SHUTDOWN to shutdown ESX host"
+        print ("""
+        \nEnter VMID to toggle power for seperated by Spaces or\n
+        AON or All VMs on or AOFF for All VMS off\n
+        Press Enter to Refresh\n
+        SHUTDOWN to shutdown ESX host""")
+
         options = raw_input("or q to quit: ")
 
         listofid = options.split()
@@ -149,10 +156,10 @@ while options.lower() != 'q':
             elif vmindex[vmid]['powerstate'] == 'POWERED ON':
                 poweroffvm(vmindex[vmid]['vmfilename'])
             else:
-                print "Power State Error"
+                print ("Power State Error")
 
         except KeyError:
-            print "Invalid VMID" + str(vmid)
+            print (f"Invalid VMID {vmid}")
 
         except ValueError:
             if vmid.lower() == 'aon':
@@ -168,4 +175,4 @@ while options.lower() != 'q':
             elif vmid.lower() == 'q':
                 pass
             else:
-                print "Invalid option"
+                print ("Invalid option")
