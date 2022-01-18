@@ -160,6 +160,7 @@ def printvelocitystats(workdaily, admindaily, focusdaily):
     admintotal = 0
     worktotal = 0
     focustotal = 0
+    focus = 0
 
     dailyheader = ["Day of Week", "Work", "Admin", "Focus", "Total", "Free"]
     dailyrows = []
