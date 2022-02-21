@@ -57,7 +57,11 @@ def datesofweek(weekdelta=0):
 
 def timelength(timerange):
     """ Calculate length of meeting """
-    startime, stoptime = timerange.split(" - ")
+    try:
+        startime, stoptime = timerange.split(" - ")
+    except ValueError:
+        print ("ERROR: Entry \'" + timerange + "\' problem returning 0")
+        return 0
     thetime1 = datetime.datetime.strptime(startime, '%H:%M')
     thetime2 = datetime.datetime.strptime(stoptime, '%H:%M')
     length = thetime2 - thetime1
