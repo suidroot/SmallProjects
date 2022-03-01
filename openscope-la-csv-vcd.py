@@ -1,4 +1,4 @@
-#!/usr/bin/which python3
+#!/usr/bin/env python3
 """ OPenScope MZ CSV export to VCD format converter
 #
 # Author:

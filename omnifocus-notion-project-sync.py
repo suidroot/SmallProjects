@@ -1,4 +1,4 @@
-#!/usr/bin/which python3
+#!/usr/bin/env python3
 '''
 Script to Syncronize Projects between Omnifocus and Notion Project database
 '''

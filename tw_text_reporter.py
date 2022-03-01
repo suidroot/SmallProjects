@@ -1,4 +1,4 @@
-#!/usr/bin/which python3
+#!/usr/bin/env python3
 '''
     This parses all tasks with in a time frame for specific text and total the time tracked
     Author: Ben Mason

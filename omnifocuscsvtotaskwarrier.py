@@ -1,4 +1,4 @@
-#!/usr/bin/which python
+#!/usr/bin/env python
 
 import csv
 import subprocess

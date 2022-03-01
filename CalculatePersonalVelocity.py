@@ -1,4 +1,4 @@
-#!/usr/bin/which python
+#!/usr/bin/env python
 
 """
 Script to Calculate my Personal Velocity
