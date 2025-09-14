@@ -7,12 +7,13 @@ import influxdb_client
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 import sys
+from os import getenv
 
 
-token = ''
-org = ""
-url = ""
-bucket=""
+token = getenv('INFLUX_TOKEN')
+org = getenv('INFLUX_ORG')
+url = getenv('INFLUX_URL')
+bucket = getenv('INFLUX_BUCKET')
 
 
 client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
@@ -22,19 +23,22 @@ def main(csv_file):
     write_api = client.write_api(write_options=SYNCHRONOUS)
     
     with open(csv_file, 'r')  as f:
-        reader = csv.reader(f)
+        
+        reader = csv.DictReader(f)
         for row in reader:
             #print(row)
-            # https://www.cmpco.com/smartenergy/understandyourusage/downloadusagedata
-            # account,serviceporint,meterid,datetime,meterchannel,usage
-            account = row[0]
-            serviceporint = row[1]
-            meterid = row[2]
-            # 4/3/2023 12:00:00 AM
-            date_time = datetime.strptime(row[3], "%m/%d/%Y %I:%M:%S %p")
-            meterchaneel = row[4]
-            usage = float(row[5])
+            # new fields (9/13/25):
+            # https://resenergymanager.cmpco.com/insights
+            # Name,Address,Account Number,Service,Type,Date,Start Time,End Time,Usage,Units,Costs,Weather
 
+            # account = row['Account Number']
+            # 2025-05-19 00:00:00-04:00
+            # date_time = datetime.strptime(row['Start Time'], "%m/%d/%Y %I:%M:%S %p")
+            date_time = datetime.strptime(row['Start Time'], "%Y-%m-%d %H:%M:%S%z")
+            # meterchaneel = row[4]
+            usage = float(row['Usage'])
+            print(date_time, usage)
+            # continue
             point = (
                 Point("_measurement")
                 .tag("kwh", "kwh")
